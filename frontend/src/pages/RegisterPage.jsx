@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { API_URL } from '../config'
+import { API_BASE_URL } from '../config'
 
 export default function RegisterPage({ onSwitchToLogin, onRegisterSuccess }) {
   const [form, setForm] = useState({
@@ -23,8 +23,8 @@ export default function RegisterPage({ onSwitchToLogin, onRegisterSuccess }) {
     setLoading(true)
 
     try {
-      // 1. Register the new user (Using API_URL here)
-      const registerResponse = await fetch(`${API_URL}/api/auth/register`, {
+      // 1. Register the new user (Using API_BASE_URL here)
+      const registerResponse = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -41,8 +41,8 @@ export default function RegisterPage({ onSwitchToLogin, onRegisterSuccess }) {
         throw new Error(registerData.message || registerData.error || 'Registration failed')
       }
 
-      // 2. Automatically log them in right after successful registration (Using API_URL here too)
-      const loginResponse = await fetch(`${API_URL}/api/auth/login`, {
+      // 2. Automatically log them in right after successful registration (Using API_BASE_URL here too)
+      const loginResponse = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
