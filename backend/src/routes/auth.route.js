@@ -14,3 +14,5 @@ router.post('/logout', verifyToken, authController.logout);
 
 // Get Profile route
 router.get('/profile', verifyToken, authController.getProfile);
+
+module.exports = router;

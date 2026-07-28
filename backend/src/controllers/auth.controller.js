@@ -1,9 +1,9 @@
-const User = require("../model/user.odel");
-const bcrypt = require("bcryptjs");
+const User = require("../model/user.model");
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 // Register Controller
-async function registerUser(req, res) {
+async function register(req, res) {
     try {
         const { username , email, password } = req.body;
         
@@ -23,7 +23,7 @@ async function registerUser(req, res) {
 }
 
 // Login Controller (Sets Token in Cookie)
-async function loginUser(req, res) {
+async function login(req, res) {
     try {
         const { username, email, password } = req.body;
 
@@ -50,7 +50,7 @@ async function loginUser(req, res) {
 }
 
 // Logout Controller (Clears the Cookie)
-async function logoutUser(req, res) {
+async function logout(req, res) {
     try {
         res.clearCookie("token");
         res.json({ message: "Logged out successfully" });
@@ -71,8 +71,8 @@ async function getProfile(req, res) {
 }
 
 module.exports = {
-    registerUser,
-    loginUser,
-    logoutUser,
+    register,
+    login,
+    logout,
     getProfile,
 };

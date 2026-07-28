@@ -15,3 +15,5 @@ router.put("/:id", verifyToken, noteController.updateNote);
 
 // Delete a note
 router.delete("/:id", verifyToken, noteController.deleteNote);
+
+module.exports = router;
