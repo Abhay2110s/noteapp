@@ -1,6 +1,6 @@
 export default function WelcomePage({ onEnterLogin, onEnterRegister }) {
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(14,116,144,0.35),_transparent_40%),linear-gradient(135deg,_#020617_0%,_#111827_100%)] text-slate-100">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(14,116,144,0.35),transparent_40%),linear-gradient(135deg,#020617_0%,#111827_100%)] text-slate-100">
       <div className="mx-auto flex min-h-screen max-w-6xl items-center justify-center px-6">
         <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-900/70 shadow-2xl backdrop-blur lg:grid-cols-2">
           {/* Left Section */}

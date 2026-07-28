@@ -2,6 +2,14 @@ const User = require("../model/user.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+const isProduction = process.env.NODE_ENV === 'production';
+
+const cookieOptions = {
+  httpOnly: true,
+  sameSite: isProduction ? 'none' : 'lax',
+  secure: isProduction,
+};
+
 // Register Controller
 async function register(req, res) {
     try {
@@ -41,7 +49,7 @@ async function login(req, res) {
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
         
         // Send token securely inside an HTTP-only cookie
-        res.cookie("token", token);
+        res.cookie("token", token, cookieOptions);
 
         res.json({ message: "Logged in successfully", username: user.username });
     } catch (err) {
@@ -52,7 +60,7 @@ async function login(req, res) {
 // Logout Controller (Clears the Cookie)
 async function logout(req, res) {
     try {
-        res.clearCookie("token");
+        res.clearCookie("token", cookieOptions);
         res.json({ message: "Logged out successfully" });
     } catch (err) {
         res.status(500).json({ error: err.message });
