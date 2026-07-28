@@ -1,19 +1,19 @@
-const User = require("../model/user.models");
+const User = require("../model/user.odel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 // Register Controller
 async function registerUser(req, res) {
     try {
-        const { username,email, password } = req.body;
+        const { username , email, password } = req.body;
         
-        const existingUser = await User.findOne({ username });
+        const existingUser = await User.findOne({$or: [{ username }, { email }]});
         if (existingUser) {
-            return res.status(400).json({ message: "Username already exists" });
+            return res.status(400).json({ message: "Username or email already exists" });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ username, password: hashedPassword });
+        const newUser = new User({ username, email, password: hashedPassword });
         await newUser.save();
 
         res.status(201).json({ message: "User registered successfully" });
