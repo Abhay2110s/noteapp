@@ -1,8 +1,3 @@
-import axios from 'axios';
+// frontend/src/config.js
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
-export const api = axios.create({
-    baseURL: API_URL,
-    withCredentials: true // Crucial for sending/receiving HTTP-only cookies!
-});
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
