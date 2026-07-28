@@ -1,25 +1,34 @@
-import { useEffect, useState } from "react";
-import API from "./api/axios";
+import { useState } from 'react'
+import WelcomePage from './WelcomePage'
+import LoginPage from './LoginPage'
+import RegisterPage from './RegisterPage'
 
 function App() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [view, setView] = useState('welcome')
 
-  useEffect(() => {
-    // Check if user is logged in via cookie on mount
-    API.get("/auth/me")
-      .then(res => setUser(res.data))
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false));
-  }, []);
+  if (view === 'login') {
+    return (
+      <LoginPage
+        onSwitchToRegister={() => setView('register')}
+        onLoginSuccess={() => setView('notes')}
+      />
+    )
+  }
 
-  if (loading) return <div>Loading...</div>;
+  if (view === 'register') {
+    return (
+      <RegisterPage
+        onSwitchToLogin={() => setView('login')}
+      />
+    )
+  }
 
   return (
-    <div>
-      {user ? <h1>Welcome back, {user.username}!</h1> : <h1>Please Login or Register</h1>}
-    </div>
-  );
+    <WelcomePage
+      onEnterLogin={() => setView('login')}
+      onEnterRegister={() => setView('register')}
+    />
+  )
 }
 
-export default App;
+export default App
