@@ -1,9 +1,11 @@
 import { useState } from 'react'
 
-export default function LoginPage({ onSwitchToRegister, onLoginSuccess }) {
+export default function RegisterPage({ onSwitchToLogin, onRegisterSuccess }) {
   const [form, setForm] = useState({
-    identifier: '',
+    username: '',
+    email: '',
     password: '',
+    confirmPassword: '',
   })
   const [loading, setLoading] = useState(false)
   const [feedback, setFeedback] = useState({ type: '', text: '' })
@@ -11,33 +13,67 @@ export default function LoginPage({ onSwitchToRegister, onLoginSuccess }) {
   async function handleSubmit(event) {
     event.preventDefault()
     setFeedback({ type: '', text: '' })
+
+    if (form.password !== form.confirmPassword) {
+      setFeedback({ type: 'error', text: 'Passwords do not match.' })
+      return
+    }
+
     setLoading(true)
 
     try {
-      const response = await fetch('/api/auth/login', {
+      // 1. Register the new user
+      const registerResponse = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: form.identifier,
-          email: form.identifier,
+          username: form.username,
+          email: form.email,
           password: form.password,
         }),
         credentials: 'include',
       })
 
-      const data = await response.json().catch(() => ({}))
+      const registerData = await registerResponse.json().catch(() => ({}))
 
-      if (!response.ok) {
-        throw new Error(data.message || data.error || 'Login failed')
+      if (!registerResponse.ok) {
+        throw new Error(registerData.message || registerData.error || 'Registration failed')
+      }
+
+      // 2. Automatically log them in right after successful registration to issue the HTTP-only cookie
+      const loginResponse = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+        }),
+        credentials: 'include',
+      })
+
+      const loginData = await loginResponse.json().catch(() => ({}))
+
+      if (!loginResponse.ok) {
+        throw new Error('Account created, but automatic login failed. Please log in manually.')
       }
 
       setFeedback({
         type: 'success',
-        text: data.message || 'Logged in successfully.',
+        text: 'Account created successfully! Redirecting...',
       })
 
-      if (onLoginSuccess) {
-        onLoginSuccess()
+      setForm({
+        username: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+      })
+
+      // 3. Trigger success callback to update global state and redirect straight to the dashboard
+      if (onRegisterSuccess) {
+        setTimeout(() => {
+          onRegisterSuccess(loginData)
+        }, 1000)
       }
     } catch (error) {
       setFeedback({ type: 'error', text: error.message })
@@ -54,19 +90,18 @@ export default function LoginPage({ onSwitchToRegister, onLoginSuccess }) {
             <div className="border-b border-white/10 bg-slate-950/40 p-8 sm:p-10 lg:border-b-0 lg:border-r">
               <p className="text-sm uppercase tracking-[0.35em] text-cyan-400">Note App</p>
               <h1 className="mt-3 text-3xl font-semibold sm:text-4xl">
-                Welcome back
+                Create your account
               </h1>
               <p className="mt-4 text-sm leading-7 text-slate-300 sm:text-base">
-                Log in to view and manage your notes securely. This page uses the backend’s
-                cookie-based authentication flow.
+                Sign up to start saving your notes securely.
               </p>
 
               <div className="mt-8 rounded-2xl border border-cyan-500/20 bg-cyan-500/10 p-4 text-sm text-cyan-100">
-                <p className="font-medium">Secure access</p>
+                <p className="font-medium">Why sign up?</p>
                 <ul className="mt-3 space-y-2 text-cyan-200">
-                  <li>• Use your username or email</li>
-                  <li>• Keep your notes protected behind JWT auth</li>
-                  <li>• Stay signed in with an HTTP-only cookie</li>
+                  <li>• Save notes privately to your account</li>
+                  <li>• Access your notes from anywhere</li>
+                  <li>• Enjoy a seamless note-taking experience</li>
                 </ul>
               </div>
             </div>
@@ -74,15 +109,15 @@ export default function LoginPage({ onSwitchToRegister, onLoginSuccess }) {
             <div className="p-8 sm:p-10">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm uppercase tracking-[0.35em] text-cyan-400">Login</p>
-                  <h2 className="mt-2 text-2xl font-semibold">Access your workspace</h2>
+                  <p className="text-sm uppercase tracking-[0.35em] text-cyan-400">Register</p>
+                  <h2 className="mt-2 text-2xl font-semibold">Join today</h2>
                 </div>
                 <button
                   type="button"
-                  onClick={onSwitchToRegister}
+                  onClick={onSwitchToLogin}
                   className="rounded-full border border-slate-700 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-cyan-400 hover:text-cyan-300"
                 >
-                  Create account
+                  Back to login
                 </button>
               </div>
 
@@ -100,14 +135,26 @@ export default function LoginPage({ onSwitchToRegister, onLoginSuccess }) {
 
               <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
                 <label className="flex flex-col gap-2 text-sm text-slate-300">
-                  <span>Username or email</span>
+                  <span>Username</span>
                   <input
-                    value={form.identifier}
+                    value={form.username}
                     onChange={(event) =>
-                      setForm({ ...form, identifier: event.target.value })
+                      setForm({ ...form, username: event.target.value })
                     }
                     className="rounded-2xl border border-slate-700 bg-slate-950/60 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400"
-                    placeholder="alex or alex@example.com"
+                    placeholder="alex"
+                    required
+                  />
+                </label>
+
+                <label className="flex flex-col gap-2 text-sm text-slate-300">
+                  <span>Email</span>
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={(event) => setForm({ ...form, email: event.target.value })}
+                    className="rounded-2xl border border-slate-700 bg-slate-950/60 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400"
+                    placeholder="alex@example.com"
                     required
                   />
                 </label>
@@ -121,7 +168,21 @@ export default function LoginPage({ onSwitchToRegister, onLoginSuccess }) {
                       setForm({ ...form, password: event.target.value })
                     }
                     className="rounded-2xl border border-slate-700 bg-slate-950/60 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400"
-                    placeholder="Enter your password"
+                    placeholder="Create a secure password"
+                    required
+                  />
+                </label>
+
+                <label className="flex flex-col gap-2 text-sm text-slate-300">
+                  <span>Confirm Password</span>
+                  <input
+                    type="password"
+                    value={form.confirmPassword}
+                    onChange={(event) =>
+                      setForm({ ...form, confirmPassword: event.target.value })
+                    }
+                    className="rounded-2xl border border-slate-700 bg-slate-950/60 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400"
+                    placeholder="Re-enter password"
                     required
                   />
                 </label>
@@ -131,7 +192,7 @@ export default function LoginPage({ onSwitchToRegister, onLoginSuccess }) {
                   disabled={loading}
                   className="w-full rounded-full bg-cyan-500 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {loading ? 'Signing in...' : 'Login'}
+                  {loading ? 'Creating account...' : 'Create account'}
                 </button>
               </form>
             </div>
