@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { API_BASE_URL } from '../config'
 
 const EMPTY_NOTE = { title: '', description: '' }
@@ -25,40 +25,7 @@ export default function DashboardPage({ onLogout }) {
   const [busy, setBusy] = useState(false)
   const [feedback, setFeedback] = useState({ type: '', text: '' })
 
-  useEffect(() => {
-    void bootstrap()
-  }, [])
-
-  async function bootstrap() {
-    setLoading(true)
-    try {
-      const profileResponse = await fetch(`${API_BASE_URL}/api/auth/profile`, {
-        credentials: 'include',
-      })
-
-      if (!profileResponse.ok) {
-        throw new Error('Not authenticated')
-      }
-
-      const profileData = await readJson(profileResponse)
-      setProfile(profileData)
-      await loadNotes()
-    } catch (error) {
-      setProfile(null)
-      setNotes([])
-      setFeedback({
-        type: 'error',
-        text: error.message || 'Please log in again.',
-      })
-      if (onLogout) {
-        onLogout()
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function loadNotes() {
+  const loadNotes = useCallback(async () => {
     const response = await fetch(`${API_BASE_URL}/api/notes`, {
       credentials: 'include',
     })
@@ -69,7 +36,40 @@ export default function DashboardPage({ onLogout }) {
 
     const noteData = await readJson(response)
     setNotes(Array.isArray(noteData) ? noteData : [])
-  }
+  }, [])
+
+  useEffect(() => {
+    const initialize = async () => {
+      setLoading(true)
+      try {
+        const profileResponse = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+          credentials: 'include',
+        })
+
+        if (!profileResponse.ok) {
+          throw new Error('Not authenticated')
+        }
+
+        const profileData = await readJson(profileResponse)
+        setProfile(profileData)
+        await loadNotes()
+      } catch (error) {
+        setProfile(null)
+        setNotes([])
+        setFeedback({
+          type: 'error',
+          text: error.message || 'Please log in again.',
+        })
+        if (onLogout) {
+          onLogout()
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    void initialize()
+  }, [loadNotes, onLogout])
 
   async function handleSubmitNote(event) {
     event.preventDefault()
