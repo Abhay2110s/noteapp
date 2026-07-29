@@ -1,27 +1,28 @@
-const express = require("express");
-const cookieParser = require("cookie-parser");
-const cors = require("cors");
-
-const authRoutes = require("./routes/auth.route");
-const noteRoutes = require("./routes/notes.route");
+const express = require('express');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 
-app.use(
-  cors({
-    origin: [
-      process.env.FRONTEND_URL,
-      "http://localhost:5173",
-      "http://localhost:3000",
-    ].filter(Boolean),
+// 1. Enable CORS for your frontend deployment
+app.use(cors({
+    origin: 'https://noteapp-m521.vercel.app',
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// 2. Explicitly handle preflight requests
+app.options('*', cors({
+    origin: 'https://noteapp-m521.vercel.app',
+    credentials: true
+}));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// ... rest of your routes (authRoute, notesRoute, etc.)
 
 app.use("/api/auth", authRoutes);
 app.use("/api/notes", noteRoutes);
