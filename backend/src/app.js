@@ -9,6 +9,11 @@ const app = express();
 app.get('/favicon.png', (req, res) => res.status(204).end());
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
+// Add this right above or near your favicon handlers
+app.get('/', (req, res) => {
+    res.status(200).json({ message: "Note App Backend is running successfully!" });
+});
+
 app.use(cors({
     origin: process.env.NODE_ENV === 'production' ? 'https://noteapp-dun-chi.vercel.app' : 'http://localhost:5173',
     credentials: true,
