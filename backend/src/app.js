@@ -16,7 +16,7 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.options('*', cors({
+app.options(/(.*)/, cors({
     origin: process.env.NODE_ENV === 'production' ? 'https://noteapp-dun-chi.vercel.app' : 'http://localhost:5173',
     credentials: true
 }));
