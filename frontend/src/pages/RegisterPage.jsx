@@ -41,26 +41,9 @@ export default function RegisterPage({ onSwitchToLogin, onRegisterSuccess }) {
         throw new Error(registerData.message || registerData.error || 'Registration failed')
       }
 
-      // 2. Automatically log them in right after successful registration (Using API_BASE_URL here too)
-      const loginResponse = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: form.email,
-          password: form.password,
-        }),
-        credentials: 'include',
-      })
-
-      const loginData = await loginResponse.json().catch(() => ({}))
-
-      if (!loginResponse.ok) {
-        throw new Error('Account created, but automatic login failed. Please log in manually.')
-      }
-
       setFeedback({
         type: 'success',
-        text: 'Account created successfully! Redirecting...',
+        text: 'Account created successfully! Redirecting to login...',
       })
 
       setForm({
@@ -70,11 +53,10 @@ export default function RegisterPage({ onSwitchToLogin, onRegisterSuccess }) {
         confirmPassword: '',
       })
 
-      // 3. Trigger success callback to update global state and redirect straight to the dashboard
-      if (onRegisterSuccess) {
+      if (onSwitchToLogin) {
         setTimeout(() => {
-          onRegisterSuccess(loginData)
-        }, 1000)
+          onSwitchToLogin()
+        }, 1200)
       }
     } catch (error) {
       setFeedback({ type: 'error', text: error.message })

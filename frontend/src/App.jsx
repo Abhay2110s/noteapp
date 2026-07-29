@@ -20,7 +20,6 @@ function App() {
     return (
       <RegisterPage
         onSwitchToLogin={() => setView('login')}
-        onRegisterSuccess={() => setView('dashboard')}
       />
     )
   }
