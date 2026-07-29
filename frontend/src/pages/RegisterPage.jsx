@@ -24,7 +24,7 @@ export default function RegisterPage({ onSwitchToLogin, onRegisterSuccess }) {
 
     try {
       // 1. Register the new user (Using API_BASE_URL here)
-      const registerResponse = await fetch(`${API_BASE_URL}/api/auth/register`, {
+      const registerResponse = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -42,7 +42,7 @@ export default function RegisterPage({ onSwitchToLogin, onRegisterSuccess }) {
       }
 
       // 2. Automatically log them in right after successful registration (Using API_BASE_URL here too)
-      const loginResponse = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      const loginResponse = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

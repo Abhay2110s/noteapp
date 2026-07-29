@@ -26,7 +26,7 @@ export default function DashboardPage({ onLogout }) {
   const [feedback, setFeedback] = useState({ type: '', text: '' })
 
   const loadNotes = useCallback(async () => {
-    const response = await fetch(`${API_BASE_URL}/api/notes`, {
+    const response = await fetch(`${API_BASE_URL}/notes`, {
       credentials: 'include',
     })
 
@@ -42,7 +42,7 @@ export default function DashboardPage({ onLogout }) {
     const initialize = async () => {
       setLoading(true)
       try {
-        const profileResponse = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+        const profileResponse = await fetch(`${API_BASE_URL}/auth/profile`, {
           credentials: 'include',
         })
 
@@ -77,7 +77,7 @@ export default function DashboardPage({ onLogout }) {
     setFeedback({ type: '', text: '' })
 
     try {
-      const endpoint = editingNoteId ? `${API_BASE_URL}/api/notes/${editingNoteId}` : `${API_BASE_URL}/api/notes`
+      const endpoint = editingNoteId ? `${API_BASE_URL}/notes/${editingNoteId}` : `${API_BASE_URL}/notes`
       const method = editingNoteId ? 'PUT' : 'POST'
 
       const response = await fetch(endpoint, {
@@ -112,7 +112,7 @@ export default function DashboardPage({ onLogout }) {
     setFeedback({ type: '', text: '' })
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/notes/${noteId}`, {
+        const response = await fetch(`${API_BASE_URL}/notes/${noteId}`, {
         method: 'DELETE',
         credentials: 'include',
       })
@@ -147,7 +147,7 @@ export default function DashboardPage({ onLogout }) {
 
   async function handleLogout() {
     try {
-      await fetch(`${API_BASE_URL}/api/auth/logout`, {
+        await fetch(`${API_BASE_URL}/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       })
