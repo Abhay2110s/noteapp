@@ -1,27 +1,20 @@
-const app = require('./src/app');
-const connectDB = require('./src/db/db');
-require('dotenv').config();
+require("dotenv").config();
 
-// Use serverless-http to adapt the Express app into a serverless handler
-const serverless = require('serverless-http');
-let dbConnected = false;
+const app = require("./src/app");
+const connectDB = require("./src/db/db");
 
-async function ensureDB() {
-  if (!dbConnected) {
+const PORT = process.env.PORT || 5000;
+
+async function start() {
+  try {
     await connectDB();
-    dbConnected = true;
+
+    app.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error("Failed to start server:", err);
   }
 }
 
-const handler = serverless(app);
-
-module.exports = async (req, res) => {
-  try {
-    await ensureDB();
-    return handler(req, res);
-  } catch (err) {
-    console.error('Handler error:', err);
-    res.statusCode = 500;
-    res.end('Internal Server Error');
-  }
-};
+start();
