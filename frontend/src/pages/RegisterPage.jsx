@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { API_BASE_URL } from '../config'
 
-export default function RegisterPage({ onSwitchToLogin, onRegisterSuccess }) {
+export default function RegisterPage({ onSwitchToLogin }) {
   const [form, setForm] = useState({
     username: '',
     email: '',
@@ -23,17 +23,19 @@ export default function RegisterPage({ onSwitchToLogin, onRegisterSuccess }) {
     setLoading(true)
 
     try {
-      // 1. Register the new user (Using API_BASE_URL here)
-      const registerResponse = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: form.username,
-          email: form.email,
-          password: form.password,
+      const registerResponse = await Promise.race([
+        fetch(`${API_BASE_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: form.username,
+            email: form.email,
+            password: form.password,
+          }),
+          credentials: 'include',
         }),
-        credentials: 'include',
-      })
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out. Please try again.')), 15000))
+      ])
 
       const registerData = await registerResponse.json().catch(() => ({}))
 

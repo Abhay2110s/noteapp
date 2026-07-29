@@ -15,16 +15,19 @@ export default function LoginPage({ onSwitchToRegister, onLoginSuccess }) {
     setLoading(true)
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: form.identifier,
-          email: form.identifier,
-          password: form.password,
+      const response = await Promise.race([
+        fetch(`${API_BASE_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: form.identifier,
+            email: form.identifier,
+            password: form.password,
+          }),
+          credentials: 'include',
         }),
-        credentials: 'include',
-      })
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out. Please try again.')), 15000))
+      ])
 
       const data = await response.json().catch(() => ({}))
 
