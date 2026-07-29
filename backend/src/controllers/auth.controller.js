@@ -21,7 +21,7 @@ async function register(req, res) {
             return res.status(400).json({ message: "Username or email already exists" });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(password, 8);
         const newUser = new User({ username, email, password: hashedPassword });
         await newUser.save();
 
