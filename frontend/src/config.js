@@ -2,5 +2,6 @@
 
 const raw = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://your-backend.vercel.app' : 'http://localhost:5000')
 const base = raw.replace(/\/+$/, '')
-export const API_BASE_URL = base.endsWith('/api') ? base : `${base}/api`
+const secureBase = import.meta.env.PROD ? base.replace(/^http:\/\//i, 'https://') : base
+export const API_BASE_URL = secureBase.endsWith('/api') ? secureBase : `${secureBase}/api`
 
