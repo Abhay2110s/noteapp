@@ -1,6 +1,6 @@
-const app = require("../src/app");
-const connectDB = require("../src/db/db");
-const serverless = require("serverless-http");
+const app = require('../src/app');
+const connectDB = require('../src/db/db');
+const serverless = require('serverless-http');
 
 let connected = false;
 
