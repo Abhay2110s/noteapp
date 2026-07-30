@@ -1,47 +1,63 @@
 # Note App
 
-A full-stack notes app: React 19 + Vite + Tailwind on the frontend, Express 5 + MongoDB (Mongoose) on the backend, with cookie-based JWT auth. Structured as two independent apps so each deploys to its **own Vercel project**.
+A full-stack notes app: React 19 + Vite + Tailwind on the frontend, Express 5 + MongoDB (Mongoose) on the backend, with cookie-based JWT auth.
 
 ```
 noteapp/
-├── backend/    → deploy as Vercel Project #1 (Node serverless functions)
-└── frontend/   → deploy as Vercel Project #2 (static Vite build)
+├── backend/    → deploy to Render (always-on Node server)
+└── frontend/   → deploy to Netlify (static Vite build)
 ```
 
-## What was fixed for production deployment
+## Why Render + Netlify instead of Vercel
 
-- **Crash on every request (the main bug):** `app.options('*', cors(...))` in `backend/src/app.js` crashed on load under Express 5 — `path-to-regexp` v8 (used internally by Express 5's router) no longer accepts a bare `'*'` wildcard and throws `Missing parameter name at index 1: *` as soon as the file is required. Since Vercel's serverless function requires this file on every cold start, **every single request was failing**. Removed the line entirely — the `cors` middleware already answers OPTIONS preflight requests on its own.
-- **Local dev server never started:** `server.js` only called `app.listen(...)` when `NODE_ENV === 'production'`, so `npm run dev` locally did nothing. Fixed so it always connects to Mongo and starts listening (this file isn't used on Vercel at all — `api/index.js` is the serverless entry point there).
-- **Fragile DB connection tracking:** `db.js` used a manual `isConnected` boolean, which can go stale when a serverless function is frozen/thawed between invocations. Switched to checking `mongoose.connection.readyState` directly, and the serverless handler now awaits the connection on every invocation (cheap no-op once connected).
-- **Legacy `vercel.json`:** replaced the old `builds`/`routes` config with a modern `rewrites` rule, and added a matching `vercel.json` to the frontend for SPA-style routing.
-- **CORS hardening:** origin is now configurable via a `CLIENT_URL` env var (comma-separated allow-list), falling back to reflecting the request origin if unset so it still works out of the box.
-- **Misc:** removed a leftover, misspelled Netlify config (`netifly.toml`) from the frontend; fixed the Vite dev proxy pointing at the wrong port (3000 → 5000); added `.env.example` files to both apps; added `timestamps` to the Note model.
+Vercel runs the backend as a **serverless function** — a fresh, short-lived instance that has to reconnect to MongoDB from scratch on nearly every request. Under Vercel's Hobby plan and a free MongoDB Atlas cluster, that reconnect was intermittently slow enough to exceed the function's time limit, causing the "request timed out" / 504 errors seen during testing.
 
-## 1. MongoDB Atlas
+Render runs the backend as a normal **long-lived Node process** (like `node server.js` on your own machine, just hosted). It connects to MongoDB **once** when it starts up and keeps that connection open for as long as the server runs — no repeated cold-start reconnects, no serverless time limit. This is a better architectural fit for this app.
 
-Create a free cluster at [mongodb.com/atlas](https://www.mongodb.com/atlas), add a database user, allow access from `0.0.0.0/0` (or Vercel's IPs), and copy the connection string.
+## 1. MongoDB Atlas (same as before)
 
-## 2. Deploy the backend
+If you already have a cluster from the Vercel attempt, you can reuse it — just make sure:
+- Network Access has `0.0.0.0/0` allowed (Active).
+- You have your connection string (`MONGO_URI`) handy.
 
-1. Push this repo to GitHub.
-2. In Vercel: **Add New Project** → import the repo → set **Root Directory** to `backend`.
-3. Add environment variables (copy from `backend/.env.example`):
-   - `MONGO_URI` — your Atlas connection string
-   - `JWT_SECRET` — any long random string
-   - `NODE_ENV` — `production`
-   - `CLIENT_URL` — leave blank for now; you'll add it after step 3 once you know the frontend URL
-4. Deploy. Visit `https://your-backend.vercel.app/` — you should see `{"message":"Note App Backend is running successfully!"}`.
+## 2. Deploy the backend to Render
 
-## 3. Deploy the frontend
+1. Push this repo to GitHub (if not already done).
+2. Go to render.com, sign up/log in, click New + -> Web Service.
+3. Connect your GitHub repo. Set:
+   - Root Directory: `backend`
+   - Build Command: `npm install`
+   - Start Command: `npm start`
+   - Instance Type: Free is fine to start.
+4. Add environment variables (Environment tab):
+   - `MONGO_URI` - your Atlas connection string
+   - `JWT_SECRET` - any long random string
+   - `NODE_ENV` - `production`
+   - `CLIENT_URL` - leave blank for now, add it after deploying the frontend
+5. Click Create Web Service. Render will build and start it - this takes a few minutes.
+6. Once live, Render gives you a URL like `https://noteapp-backend.onrender.com`. Open it - you should see `{"message":"Note App Backend is running successfully!"}`.
 
-1. In Vercel: **Add New Project** → import the same repo again → set **Root Directory** to `frontend`.
-2. Add environment variable:
-   - `VITE_API_URL` — `https://your-backend.vercel.app` (the URL from step 2, no trailing slash)
-3. Deploy.
+Note on Render's free tier: free web services "spin down" after 15 minutes of no traffic and take 30-60 seconds to wake up on the next request. This is normal - the first request after idle time will be slow, then it's fast again.
 
-## 4. Lock down CORS (recommended)
+## 3. Deploy the frontend to Netlify
 
-Go back to the **backend** project → Settings → Environment Variables → set `CLIENT_URL` to your frontend's URL (e.g. `https://your-frontend.vercel.app`) → redeploy the backend.
+1. Go to netlify.com, sign up/log in, click Add new site -> Import an existing project.
+2. Connect the same GitHub repo.
+3. Set:
+   - Base directory: `frontend`
+   - Build command: `npm run build`
+   - Publish directory: `frontend/dist` (Netlify may auto-fill this from `netlify.toml`)
+4. Add environment variable (Site configuration -> Environment variables):
+   - `VITE_API_URL` - your Render backend URL from step 2 (e.g. `https://noteapp-backend.onrender.com`, no trailing slash)
+5. Deploy. Netlify gives you a URL like `https://your-site-name.netlify.app`.
+
+## 4. Lock down CORS
+
+Go back to Render -> your backend service -> Environment -> set `CLIENT_URL` to your Netlify URL (e.g. `https://your-site-name.netlify.app`) -> save (Render auto-redeploys on env var change).
+
+## 5. Test
+
+Open your Netlify URL, register an account, log in, create/edit/delete a note. If the backend was idle, the first request may take up to a minute (free tier spin-up) - that's expected, not a bug.
 
 ## Local development
 
