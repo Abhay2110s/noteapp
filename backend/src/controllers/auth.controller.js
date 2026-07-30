@@ -49,10 +49,15 @@ async function login(req, res) {
         // Generate JWT token
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
         
-        // Send token securely inside an HTTP-only cookie
+        // Also set it as a cookie for same-origin setups where that works.
         res.cookie("token", token, cookieOptions);
 
-        res.json({ message: "Logged in successfully", username: user.username });
+        // Cross-domain deployments (frontend and backend on different
+        // domains, e.g. Netlify + Render) can't rely on the cookie being
+        // sent back, since browsers increasingly block third-party
+        // cookies. Sending the token in the body lets the frontend store
+        // it and attach it as an Authorization header on future requests.
+        res.json({ message: "Logged in successfully", username: user.username, token });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

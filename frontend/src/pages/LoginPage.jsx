@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { API_BASE_URL } from '../config'
+import { setToken } from '../auth'
 
 export default function LoginPage({ onSwitchToRegister, onLoginSuccess }) {
   const [form, setForm] = useState({
@@ -34,6 +35,8 @@ export default function LoginPage({ onSwitchToRegister, onLoginSuccess }) {
       if (!response.ok) {
         throw new Error(data.message || data.error || 'Login failed')
       }
+
+      setToken(data.token)
 
       setFeedback({
         type: 'success',

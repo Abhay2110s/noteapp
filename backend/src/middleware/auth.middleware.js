@@ -1,11 +1,15 @@
 const jwt = require("jsonwebtoken");
 
 const verifyToken = (req, res, next) => {
-    // Read the token from the HTTP-only cookie
-    const token = req.cookies.token;
-    
+    // Prefer a Bearer token in the Authorization header (works reliably
+    // across different domains). Fall back to the cookie for same-origin
+    // setups where that still works fine.
+    const authHeader = req.headers.authorization || "";
+    const headerToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+    const token = headerToken || req.cookies.token;
+
     if (!token) {
-        return res.status(401).json({ message: "Access Denied. No token found in cookies." });
+        return res.status(401).json({ message: "Access Denied. No token found." });
     }
 
     try {

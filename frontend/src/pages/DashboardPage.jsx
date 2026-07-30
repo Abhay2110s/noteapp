@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { API_BASE_URL } from '../config'
+import { authHeaders, clearToken } from '../auth'
 
 const EMPTY_NOTE = { title: '', description: '' }
 
@@ -28,6 +29,7 @@ export default function DashboardPage({ onLogout }) {
   const loadNotes = useCallback(async () => {
     const response = await fetch(`${API_BASE_URL}/notes`, {
       credentials: 'include',
+      headers: { ...authHeaders() },
     })
 
     if (!response.ok) {
@@ -44,6 +46,7 @@ export default function DashboardPage({ onLogout }) {
       try {
         const profileResponse = await fetch(`${API_BASE_URL}/auth/profile`, {
           credentials: 'include',
+          headers: { ...authHeaders() },
         })
 
         if (!profileResponse.ok) {
@@ -56,6 +59,7 @@ export default function DashboardPage({ onLogout }) {
       } catch (error) {
         setProfile(null)
         setNotes([])
+        clearToken()
         setFeedback({
           type: 'error',
           text: error.message || 'Please log in again.',
@@ -82,7 +86,7 @@ export default function DashboardPage({ onLogout }) {
 
       const response = await fetch(endpoint, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify(noteForm),
         credentials: 'include',
       })
@@ -115,6 +119,7 @@ export default function DashboardPage({ onLogout }) {
         const response = await fetch(`${API_BASE_URL}/notes/${noteId}`, {
         method: 'DELETE',
         credentials: 'include',
+        headers: { ...authHeaders() },
       })
 
       const data = await readJson(response)
@@ -150,10 +155,12 @@ export default function DashboardPage({ onLogout }) {
         await fetch(`${API_BASE_URL}/auth/logout`, {
         method: 'POST',
         credentials: 'include',
+        headers: { ...authHeaders() },
       })
     } catch {
       // ignore logout errors and just move on
     } finally {
+      clearToken()
       if (onLogout) {
         onLogout()
       }
