@@ -9,7 +9,12 @@ async function connectDB() {
     }
 
     try {
-        await mongoose.connect(process.env.MONGO_URI);
+        await mongoose.connect(process.env.MONGO_URI, {
+            // Fail fast instead of the driver's default 30s hang, so errors
+            // surface quickly and clearly instead of silently timing out.
+            serverSelectionTimeoutMS: 8000,
+            socketTimeoutMS: 20000,
+        });
         console.log('MongoDB connected');
         return mongoose.connection;
     } catch (error) {
