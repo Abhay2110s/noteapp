@@ -1,76 +1,286 @@
-# Note App
+<div align="center">
 
-A full-stack notes app: React 19 + Vite + Tailwind on the frontend, Express 5 + MongoDB (Mongoose) on the backend, with cookie-based JWT auth.
+# 📝 InkVault - Modern Note Taking App
+
+### Secure • Fast • Responsive
+
+A modern full-stack note-taking application built with **React 19**, **Vite**, **Tailwind CSS**, **Express.js**, and **MongoDB**, featuring secure **JWT Authentication** using HTTP-only cookies.
+
+<p>
+<a href="https://noteapp-front.netlify.app">
+<img src="https://img.shields.io/badge/🌐_Live_Demo-Visit_Now-00C2FF?style=for-the-badge"/>
+</a>
+
+<img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react"/>
+<img src="https://img.shields.io/badge/Vite-6-646CFF?style=for-the-badge&logo=vite"/>
+<img src="https://img.shields.io/badge/Express-5-black?style=for-the-badge&logo=express"/>
+<img src="https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb"/>
+
+</p>
+
+**🚀 Live Demo:** https://noteapp-front.netlify.app
+
+</div>
+
+---
+
+# ✨ Features
+
+- 🔐 Cookie-based JWT Authentication
+- 📝 Create, Update & Delete Notes
+- 📂 Personal Dashboard
+- ⚡ Fast CRUD Operations
+- 🎨 Beautiful Modern UI
+- 📱 Fully Responsive
+- ☁️ MongoDB Atlas Integration
+- 🔒 Protected Routes
+- 🌐 Production Ready Deployment
+
+---
+
+# 📸 Screenshots
+
+## 🏠 Landing Page
+
+<p align="center">
+<img src="./screenshots/landing.png" width="900"/>
+</p>
+
+---
+
+## 📝 Register Page
+
+<p align="center">
+<img src="./screenshots/register.png" width="900"/>
+</p>
+
+---
+
+## 📋 Dashboard
+
+<p align="center">
+<img src="./screenshots/dashboard.png" width="900"/>
+</p>
+
+---
+
+# 🏗️ Tech Stack
+
+### Frontend
+
+- React 19
+- Vite
+- Tailwind CSS
+- Axios
+
+### Backend
+
+- Node.js
+- Express.js 5
+
+### Database
+
+- MongoDB Atlas
+- Mongoose
+
+### Authentication
+
+- JWT
+- HTTP-only Cookies
+- bcrypt
+
+---
+
+# 📁 Project Structure
 
 ```
 noteapp/
-├── backend/    → deploy to Render (always-on Node server)
-└── frontend/   → deploy to Netlify (static Vite build)
+├── backend/      # Express API
+└── frontend/     # React + Vite
 ```
 
-## Why Render + Netlify instead of Vercel
+---
 
-Vercel runs the backend as a **serverless function** — a fresh, short-lived instance that has to reconnect to MongoDB from scratch on nearly every request. Under Vercel's Hobby plan and a free MongoDB Atlas cluster, that reconnect was intermittently slow enough to exceed the function's time limit, causing the "request timed out" / 504 errors seen during testing.
+# 🌍 Live Deployment
 
-Render runs the backend as a normal **long-lived Node process** (like `node server.js` on your own machine, just hosted). It connects to MongoDB **once** when it starts up and keeps that connection open for as long as the server runs — no repeated cold-start reconnects, no serverless time limit. This is a better architectural fit for this app.
+| Service | URL |
+|---------|-----|
+| Frontend | https://noteapp-front.netlify.app |
+| Backend | Render |
 
-## 1. MongoDB Atlas (same as before)
+---
 
-If you already have a cluster from the Vercel attempt, you can reuse it — just make sure:
-- Network Access has `0.0.0.0/0` allowed (Active).
-- You have your connection string (`MONGO_URI`) handy.
+# 🚀 Why Render + Netlify?
 
-## 2. Deploy the backend to Render
+The frontend is deployed on **Netlify**, while the backend runs on **Render**.
 
-1. Push this repo to GitHub (if not already done).
-2. Go to render.com, sign up/log in, click New + -> Web Service.
-3. Connect your GitHub repo. Set:
-   - Root Directory: `backend`
-   - Build Command: `npm install`
-   - Start Command: `npm start`
-   - Instance Type: Free is fine to start.
-4. Add environment variables (Environment tab):
-   - `MONGO_URI` - your Atlas connection string
-   - `JWT_SECRET` - any long random string
-   - `NODE_ENV` - `production`
-   - `CLIENT_URL` - leave blank for now, add it after deploying the frontend
-5. Click Create Web Service. Render will build and start it - this takes a few minutes.
-6. Once live, Render gives you a URL like `https://noteapp-backend.onrender.com`. Open it - you should see `{"message":"Note App Backend is running successfully!"}`.
+### Why not Vercel?
 
-Note on Render's free tier: free web services "spin down" after 15 minutes of no traffic and take 30-60 seconds to wake up on the next request. This is normal - the first request after idle time will be slow, then it's fast again.
+Vercel executes the backend as **serverless functions**. Each request may create a fresh instance, requiring a new MongoDB connection. On the free Hobby plan with MongoDB Atlas, this can occasionally lead to **cold starts** and **504 timeout errors**.
 
-## 3. Deploy the frontend to Netlify
+Render keeps the Express server running as a **long-lived Node.js process**, maintaining a persistent MongoDB connection. This architecture provides better reliability for applications with continuous database interactions.
 
-1. Go to netlify.com, sign up/log in, click Add new site -> Import an existing project.
-2. Connect the same GitHub repo.
-3. Set:
-   - Base directory: `frontend`
-   - Build command: `npm run build`
-   - Publish directory: `frontend/dist` (Netlify may auto-fill this from `netlify.toml`)
-4. Add environment variable (Site configuration -> Environment variables):
-   - `VITE_API_URL` - your Render backend URL from step 2 (e.g. `https://noteapp-backend.onrender.com`, no trailing slash)
-5. Deploy. Netlify gives you a URL like `https://your-site-name.netlify.app`.
+---
 
-## 4. Lock down CORS
+# ⚙️ Environment Variables
 
-Go back to Render -> your backend service -> Environment -> set `CLIENT_URL` to your Netlify URL (e.g. `https://your-site-name.netlify.app`) -> save (Render auto-redeploys on env var change).
+## Backend
 
-## 5. Test
+```env
+PORT=5000
+MONGO_URI=your_mongodb_uri
+JWT_SECRET=your_secret_key
+CLIENT_URL=http://localhost:5173
+NODE_ENV=development
+```
 
-Open your Netlify URL, register an account, log in, create/edit/delete a note. If the backend was idle, the first request may take up to a minute (free tier spin-up) - that's expected, not a bug.
+## Frontend
 
-## Local development
+```env
+VITE_API_URL=http://localhost:5000
+```
+
+---
+
+# 💻 Local Development
+
+## Clone Repository
 
 ```bash
-# backend
-cd backend
-cp .env.example .env   # fill in MONGO_URI and JWT_SECRET
-npm install
-npm run dev             # http://localhost:5000
-
-# frontend (separate terminal)
-cd frontend
-cp .env.example .env    # VITE_API_URL=http://localhost:5000
-npm install
-npm run dev              # http://localhost:5173
+git clone https://github.com/yourusername/noteapp.git
+cd noteapp
 ```
+
+---
+
+## Backend
+
+```bash
+cd backend
+
+cp .env.example .env
+
+npm install
+
+npm run dev
+```
+
+Runs on:
+
+```
+http://localhost:5000
+```
+
+---
+
+## Frontend
+
+```bash
+cd frontend
+
+cp .env.example .env
+
+npm install
+
+npm run dev
+```
+
+Runs on:
+
+```
+http://localhost:5173
+```
+
+---
+
+# 🚀 Deployment
+
+## Backend (Render)
+
+- Root Directory: `backend`
+- Build Command
+
+```bash
+npm install
+```
+
+- Start Command
+
+```bash
+npm start
+```
+
+Environment Variables
+
+```
+MONGO_URI
+JWT_SECRET
+NODE_ENV=production
+CLIENT_URL=<Netlify URL>
+```
+
+---
+
+## Frontend (Netlify)
+
+Base Directory
+
+```
+frontend
+```
+
+Build Command
+
+```bash
+npm run build
+```
+
+Publish Directory
+
+```
+frontend/dist
+```
+
+Environment Variable
+
+```
+VITE_API_URL=<Render Backend URL>
+```
+
+---
+
+# 📌 Render Free Tier Note
+
+Render's free services automatically spin down after **15 minutes** of inactivity.
+
+The first request after being idle may take **30–60 seconds** while the server wakes up. Subsequent requests are fast.
+
+---
+
+# 🎯 Future Improvements
+
+- ⭐ Pin Notes
+- 📁 Categories
+- 🏷 Tags
+- 🔍 Search Notes
+- 📤 Export Notes
+- 🤝 Share Notes
+- 🌙 Light/Dark Theme
+
+---
+
+# 👨‍💻 Author
+
+### Abhay Singh
+
+GitHub: https://github.com/Abhay2110s
+
+---
+
+<div align="center">
+
+### ⭐ Star this repository if you found it useful!
+
+Made with ❤️ by Abhay Singh
+
+</div>
